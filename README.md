@@ -19,7 +19,7 @@ EcoTrack is a zero-dependency, single-file web app that helps you build and main
 No build step. No dependencies. Just open the file.
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/ecotrack.git
+git clone https://github.com/makendrang/ecotrack.git
 cd ecotrack
 open index.html
 ```
