@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EcoTrack — Eco Habit Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,400;0,600;1,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green-deep: #1a3a2a;
+    --green-mid: #2d6a4f;
+    --green-bright: #52b788;
+    --green-light: #b7e4c7;
+    --green-pale: #d8f3dc;
+    --cream: #f5f0e8;
+    --amber: #e9a825;
+    --text: #1a3a2a;
+    --text-muted: #4a7c5f;
+    --white: #ffffff;
+    --card-bg: rgba(255,255,255,0.85);
+    --shadow: 0 4px 24px rgba(26,58,42,0.10);
+    --radius: 18px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Mono', monospace;
+    background: var(--cream);
+    color: var(--text);
+    min-height: 100vh;
+    background-image:
+      radial-gradient(ellipse at 10% 20%, rgba(82,183,136,0.13) 0%, transparent 60%),
+      radial-gradient(ellipse at 90% 80%, rgba(45,106,79,0.10) 0%, transparent 60%),
+      url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%232d6a4f' fill-opacity='0.03'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  }
+
+  /* ── Header ── */
+  header {
+    padding: 28px 32px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 960px;
+    margin: 0 auto;
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .logo-icon {
+    width: 38px; height: 38px;
+    background: var(--green-mid);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+  }
+  .logo-text {
+    font-family: 'Fraunces', serif;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--green-deep);
+    letter-spacing: -0.5px;
+  }
+  .logo-sub {
+    font-size: 10px;
+    color: var(--text-muted);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-top: 1px;
+  }
+  .header-date {
+    font-size: 12px;
+    color: var(--text-muted);
+    text-align: right;
+  }
+  .header-date strong {
+    display: block;
+    font-size: 14px;
+    color: var(--green-mid);
+  }
+
+  /* ── Main layout ── */
+  main {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 0 24px 60px;
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 24px;
+  }
+  @media (max-width: 720px) {
+    main { grid-template-columns: 1fr; }
+    header { padding: 20px 20px 12px; }
+    main { padding: 0 16px 40px; }
+  }
+
+  /* ── Cards ── */
+  .card {
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    padding: 24px;
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(82,183,136,0.15);
+  }
+  .card-title {
+    font-family: 'Fraunces', serif;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--green-deep);
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card-title span { font-size: 18px; }
+
+  /* ── Today's Check-in ── */
+  .habits-list { display: flex; flex-direction: column; gap: 10px; }
+  .habit-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 16px;
+    background: var(--green-pale);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 2px solid transparent;
+    user-select: none;
+  }
+  .habit-item:hover { border-color: var(--green-bright); background: #c9edd6; }
+  .habit-item.done {
+    background: var(--green-mid);
+    border-color: var(--green-mid);
+    color: white;
+  }
+  .habit-check {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    border: 2px solid var(--green-mid);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px;
+    flex-shrink: 0;
+    transition: all 0.2s;
+    background: white;
+  }
+  .habit-item.done .habit-check {
+    background: var(--green-bright);
+    border-color: var(--green-bright);
+    color: white;
+  }
+  .habit-info { flex: 1; }
+  .habit-name { font-size: 13px; font-weight: 500; }
+  .habit-meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+  .habit-item.done .habit-meta { color: var(--green-light); }
+  .habit-streak {
+    font-size: 11px;
+    background: rgba(255,255,255,0.3);
+    padding: 3px 8px;
+    border-radius: 20px;
+    white-space: nowrap;
+  }
+  .habit-item:not(.done) .habit-streak {
+    background: rgba(45,106,79,0.1);
+    color: var(--green-mid);
+  }
+
+  /* Add habit */
+  .add-habit-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 14px;
+  }
+  .add-habit-row input {
+    flex: 1;
+    padding: 10px 14px;
+    border: 2px solid var(--green-light);
+    border-radius: 10px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    background: white;
+    color: var(--text);
+    outline: none;
+    transition: border 0.2s;
+  }
+  .add-habit-row input:focus { border-color: var(--green-bright); }
+  .add-habit-row input::placeholder { color: #aac7b3; }
+  .btn {
+    padding: 10px 16px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+  .btn-primary {
+    background: var(--green-mid);
+    color: white;
+  }
+  .btn-primary:hover { background: var(--green-deep); }
+
+  /* ── Streak summary ── */
+  .streak-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .streak-box {
+    background: var(--green-pale);
+    border-radius: 12px;
+    padding: 14px;
+    text-align: center;
+  }
+  .streak-num {
+    font-family: 'Fraunces', serif;
+    font-size: 32px;
+    font-weight: 600;
+    color: var(--green-mid);
+    line-height: 1;
+  }
+  .streak-label { font-size: 10px; color: var(--text-muted); margin-top: 4px; letter-spacing: 1px; text-transform: uppercase; }
+
+  /* ── Week view ── */
+  .week-row {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 16px;
+  }
+  .day-dot {
+    flex: 1;
+    aspect-ratio: 1;
+    border-radius: 8px;
+    background: var(--green-pale);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+  }
+  .day-dot.active { background: var(--green-bright); }
+  .day-dot.today { border: 2px solid var(--green-mid); }
+  .day-dot.partial { background: var(--green-light); }
+  .day-label { font-size: 9px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  .day-dot.active .day-label { color: white; }
+  .day-pct { font-size: 10px; font-weight: 500; color: var(--green-mid); }
+  .day-dot.active .day-pct { color: white; }
+
+  /* ── Impact chart ── */
+  .impact-bars { display: flex; flex-direction: column; gap: 10px; }
+  .impact-row { display: flex; align-items: center; gap: 10px; }
+  .impact-label { font-size: 11px; width: 100px; flex-shrink: 0; color: var(--text-muted); }
+  .impact-bar-bg {
+    flex: 1; height: 8px; background: var(--green-pale); border-radius: 4px; overflow: hidden;
+  }
+  .impact-bar-fill {
+    height: 100%; border-radius: 4px; background: var(--green-bright);
+    transition: width 1s cubic-bezier(0.4,0,0.2,1);
+    width: 0%;
+  }
+  .impact-val { font-size: 11px; color: var(--green-mid); width: 36px; text-align: right; font-weight: 500; }
+
+  /* ── Reminder banner ── */
+  .reminder-banner {
+    background: linear-gradient(135deg, var(--green-mid), var(--green-deep));
+    border-radius: 14px;
+    padding: 18px 20px;
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 0;
+    cursor: pointer;
+    transition: transform 0.15s;
+  }
+  .reminder-banner:hover { transform: translateY(-1px); }
+  .reminder-icon { font-size: 28px; }
+  .reminder-text { flex: 1; }
+  .reminder-text strong { display: block; font-size: 13px; margin-bottom: 2px; }
+  .reminder-text span { font-size: 11px; opacity: 0.75; }
+  .reminder-toggle {
+    width: 36px; height: 20px;
+    background: rgba(255,255,255,0.3);
+    border-radius: 10px;
+    position: relative;
+    transition: background 0.2s;
+    flex-shrink: 0;
+  }
+  .reminder-toggle.on { background: var(--green-bright); }
+  .reminder-toggle::after {
+    content: '';
+    position: absolute;
+    top: 3px; left: 3px;
+    width: 14px; height: 14px;
+    background: white;
+    border-radius: 50%;
+    transition: transform 0.2s;
+  }
+  .reminder-toggle.on::after { transform: translateX(16px); }
+
+  /* ── Toast ── */
+  .toast {
+    position: fixed;
+    bottom: 24px; left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--green-deep);
+    color: white;
+    padding: 12px 22px;
+    border-radius: 30px;
+    font-size: 13px;
+    transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    z-index: 999;
+    white-space: nowrap;
+    box-shadow: 0 8px 24px rgba(26,58,42,0.3);
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* ── Notification modal ── */
+  .modal-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(26,58,42,0.4);
+    backdrop-filter: blur(4px);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--cream);
+    border-radius: 20px;
+    padding: 28px;
+    width: 320px;
+    box-shadow: 0 20px 60px rgba(26,58,42,0.2);
+  }
+  .modal h3 {
+    font-family: 'Fraunces', serif;
+    font-size: 18px;
+    margin-bottom: 8px;
+    color: var(--green-deep);
+  }
+  .modal p { font-size: 12px; color: var(--text-muted); margin-bottom: 18px; line-height: 1.6; }
+  .modal-time {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 18px;
+  }
+  .modal-time label { font-size: 12px; color: var(--text-muted); }
+  .modal-time input[type=time] {
+    padding: 8px 12px;
+    border: 2px solid var(--green-light);
+    border-radius: 8px;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    background: white;
+    color: var(--text);
+    outline: none;
+  }
+  .modal-time input[type=time]:focus { border-color: var(--green-bright); }
+  .modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
+  .btn-ghost {
+    background: transparent;
+    color: var(--text-muted);
+    border: 2px solid var(--green-light);
+  }
+  .btn-ghost:hover { border-color: var(--green-mid); color: var(--green-mid); }
+
+  /* ── Progress ring ── */
+  .progress-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+    gap: 20px;
+  }
+  .progress-ring-container { position: relative; width: 90px; height: 90px; }
+  .progress-ring { transform: rotate(-90deg); }
+  .ring-bg { fill: none; stroke: var(--green-pale); stroke-width: 8; }
+  .ring-fill { fill: none; stroke: var(--green-bright); stroke-width: 8; stroke-linecap: round; transition: stroke-dashoffset 0.8s ease; }
+  .ring-text {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+  }
+  .ring-pct { font-family: 'Fraunces', serif; font-size: 22px; font-weight: 600; color: var(--green-mid); line-height: 1; }
+  .ring-sub { font-size: 9px; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase; }
+  .progress-info { flex: 1; }
+  .progress-info p { font-size: 12px; color: var(--text-muted); line-height: 1.7; }
+  .progress-info strong { color: var(--green-mid); }
+
+  /* left column stack */
+  .left-col { display: flex; flex-direction: column; gap: 20px; }
+  .right-col { display: flex; flex-direction: column; gap: 20px; }
+
+  .earth-day-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--amber);
+    color: var(--green-deep);
+    font-size: 10px;
+    font-weight: 500;
+    padding: 4px 10px;
+    border-radius: 20px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">🌿</div>
+    <div>
+      <div class="logo-text">EcoTrack</div>
+      <div class="logo-sub">Habit Tracker</div>
+    </div>
+  </div>
+  <div class="header-date">
+    <strong id="today-date"></strong>
+    <span class="earth-day-badge">🌍 Earth Day</span>
+  </div>
+</header>
+
+<main>
+  <!-- LEFT COLUMN -->
+  <div class="left-col">
+
+    <!-- Today's check-in -->
+    <div class="card">
+      <div class="card-title"><span>✅</span> Today's Check-in</div>
+      <div class="habits-list" id="habits-list"></div>
+      <div class="add-habit-row">
+        <input type="text" id="new-habit-input" placeholder="Add a new eco habit..." maxlength="50">
+        <button class="btn btn-primary" onclick="addHabit()">+ Add</button>
+      </div>
+    </div>
+
+    <!-- Impact chart -->
+    <div class="card">
+      <div class="card-title"><span>📊</span> Weekly Impact</div>
+      <div class="impact-bars" id="impact-bars"></div>
+    </div>
+
+  </div>
+
+  <!-- RIGHT COLUMN -->
+  <div class="right-col">
+
+    <!-- Progress ring + stats -->
+    <div class="card">
+      <div class="card-title"><span>🔥</span> Your Progress</div>
+      <div class="progress-wrap">
+        <div class="progress-ring-container">
+          <svg class="progress-ring" width="90" height="90">
+            <circle class="ring-bg" cx="45" cy="45" r="35"/>
+            <circle class="ring-fill" id="ring-fill" cx="45" cy="45" r="35"
+              stroke-dasharray="219.9" stroke-dashoffset="219.9"/>
+          </svg>
+          <div class="ring-text">
+            <div class="ring-pct" id="ring-pct">0%</div>
+            <div class="ring-sub">today</div>
+          </div>
+        </div>
+        <div class="progress-info">
+          <p>You've completed <strong id="done-count">0</strong> of <strong id="total-count">0</strong> habits today.<br>Keep it up for the planet! 🌱</p>
+        </div>
+      </div>
+      <div class="streak-grid">
+        <div class="streak-box">
+          <div class="streak-num" id="current-streak">0</div>
+          <div class="streak-label">Day streak</div>
+        </div>
+        <div class="streak-box">
+          <div class="streak-num" id="total-completions">0</div>
+          <div class="streak-label">Total done</div>
+        </div>
+        <div class="streak-box">
+          <div class="streak-num" id="best-streak">0</div>
+          <div class="streak-label">Best streak</div>
+        </div>
+        <div class="streak-box">
+          <div class="streak-num" id="habits-count">0</div>
+          <div class="streak-label">Habits tracked</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- This week -->
+    <div class="card">
+      <div class="card-title"><span>📅</span> This Week</div>
+      <div class="week-row" id="week-row"></div>
+    </div>
+
+    <!-- Reminder -->
+    <div class="reminder-banner" id="reminder-banner" onclick="openReminderModal()">
+      <div class="reminder-icon">🔔</div>
+      <div class="reminder-text">
+        <strong>Daily Reminder</strong>
+        <span id="reminder-desc">Tap to set a daily nudge</span>
+      </div>
+      <div class="reminder-toggle" id="reminder-toggle"></div>
+    </div>
+
+  </div>
+</main>
+
+<!-- Reminder modal -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <h3>🔔 Set Daily Reminder</h3>
+    <p>We'll show a browser notification each day to remind you to check in with your eco habits.</p>
+    <div class="modal-time">
+      <label>Remind me at</label>
+      <input type="time" id="reminder-time" value="08:00">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveReminder()">Save reminder</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+const DEFAULT_HABITS = [
+  { id: 1, name: "Used reusable bag", emoji: "🛍️", impact: "plastic" },
+  { id: 2, name: "Chose public transport", emoji: "🚌", impact: "carbon" },
+  { id: 3, name: "Ate plant-based meal", emoji: "🥗", impact: "carbon" },
+  { id: 4, name: "Turned off unused lights", emoji: "💡", impact: "energy" },
+  { id: 5, name: "Carried reusable bottle", emoji: "🍶", impact: "plastic" },
+];
+
+const IMPACTS = [
+  { key: "carbon", label: "CO₂ saved", unit: "kg", perCheck: 0.8 },
+  { key: "plastic", label: "Plastic avoided", unit: "items", perCheck: 1 },
+  { key: "energy", label: "Energy saved", unit: "kWh", perCheck: 0.3 },
+  { key: "water", label: "Water saved", unit: "L", perCheck: 15 },
+];
+
+function getTodayKey() {
+  return new Date().toISOString().split('T')[0];
+}
+
+function loadState() {
+  try { return JSON.parse(localStorage.getItem('ecotrack') || '{}'); } catch { return {}; }
+}
+
+function saveState(state) {
+  localStorage.setItem('ecotrack', JSON.stringify(state));
+}
+
+function getState() {
+  const s = loadState();
+  const today = getTodayKey();
+  if (!s.habits) s.habits = DEFAULT_HABITS.map(h => ({...h}));
+  if (!s.log) s.log = {};
+  if (!s.log[today]) s.log[today] = [];
+  if (!s.stats) s.stats = { totalCompletions: 0, bestStreak: 0 };
+  if (!s.reminder) s.reminder = { on: false, time: '08:00' };
+  return s;
+}
+
+// ── Render ──
+function render() {
+  const s = getState();
+  const today = getTodayKey();
+  const doneToday = s.log[today] || [];
+
+  // Date header
+  document.getElementById('today-date').textContent =
+    new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+
+  // Habits list
+  const list = document.getElementById('habits-list');
+  list.innerHTML = '';
+  s.habits.forEach(h => {
+    const done = doneToday.includes(h.id);
+    const streak = calcHabitStreak(s.log, h.id);
+    const div = document.createElement('div');
+    div.className = 'habit-item' + (done ? ' done' : '');
+    div.innerHTML = `
+      <div class="habit-check">${done ? '✓' : ''}</div>
+      <div class="habit-info">
+        <div class="habit-name">${h.emoji || '🌿'} ${h.name}</div>
+        <div class="habit-meta">${h.impact || 'sustainability'}</div>
+      </div>
+      <div class="habit-streak">🔥 ${streak}d</div>
+    `;
+    div.onclick = () => toggleHabit(h.id);
+    list.appendChild(div);
+  });
+
+  // Progress ring
+  const total = s.habits.length;
+  const done = doneToday.length;
+  const pct = total ? Math.round((done / total) * 100) : 0;
+  const circumference = 219.9;
+  const offset = circumference - (pct / 100) * circumference;
+  document.getElementById('ring-fill').style.strokeDashoffset = offset;
+  document.getElementById('ring-pct').textContent = pct + '%';
+  document.getElementById('done-count').textContent = done;
+  document.getElementById('total-count').textContent = total;
+
+  // Streak stats
+  const streak = calcCurrentStreak(s.log, s.habits);
+  document.getElementById('current-streak').textContent = streak;
+  document.getElementById('total-completions').textContent = s.stats.totalCompletions || 0;
+  document.getElementById('best-streak').textContent = s.stats.bestStreak || 0;
+  document.getElementById('habits-count').textContent = s.habits.length;
+
+  // Week row
+  renderWeek(s);
+
+  // Impact bars
+  renderImpact(s);
+
+  // Reminder
+  const rt = document.getElementById('reminder-toggle');
+  rt.className = 'reminder-toggle' + (s.reminder.on ? ' on' : '');
+  document.getElementById('reminder-desc').textContent =
+    s.reminder.on ? `Daily at ${s.reminder.time}` : 'Tap to set a daily nudge';
+}
+
+function renderWeek(s) {
+  const row = document.getElementById('week-row');
+  row.innerHTML = '';
+  const days = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+  const today = new Date();
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(today.getDate() - i);
+    const key = d.toISOString().split('T')[0];
+    const log = s.log[key] || [];
+    const total = s.habits.length || 1;
+    const pct = Math.round((log.length / total) * 100);
+    const isToday = i === 0;
+    let cls = 'day-dot';
+    if (pct === 100) cls += ' active';
+    else if (pct > 0) cls += ' partial';
+    if (isToday) cls += ' today';
+    const div = document.createElement('div');
+    div.className = cls;
+    div.innerHTML = `<span class="day-label">${days[d.getDay()]}</span><span class="day-pct">${pct}%</span>`;
+    row.appendChild(div);
+  }
+}
+
+function renderImpact(s) {
+  const container = document.getElementById('impact-bars');
+  container.innerHTML = '';
+  // count habit completions by impact type across all log
+  const counts = {};
+  Object.values(s.log).forEach(dayLog => {
+    dayLog.forEach(id => {
+      const h = s.habits.find(x => x.id === id);
+      if (h) counts[h.impact] = (counts[h.impact] || 0) + 1;
+    });
+  });
+
+  IMPACTS.forEach(imp => {
+    const c = counts[imp.key] || 0;
+    const val = (c * imp.perCheck).toFixed(1);
+    const maxVal = 20;
+    const widthPct = Math.min((c * imp.perCheck / maxVal) * 100, 100);
+    const row = document.createElement('div');
+    row.className = 'impact-row';
+    row.innerHTML = `
+      <div class="impact-label">${imp.label}</div>
+      <div class="impact-bar-bg"><div class="impact-bar-fill" style="width:0%" data-w="${widthPct}"></div></div>
+      <div class="impact-val">${val}${imp.unit}</div>
+    `;
+    container.appendChild(row);
+  });
+
+  // animate bars after paint
+  setTimeout(() => {
+    document.querySelectorAll('.impact-bar-fill').forEach(b => {
+      b.style.width = b.dataset.w + '%';
+    });
+  }, 80);
+}
+
+// ── Logic ──
+function toggleHabit(id) {
+  const s = getState();
+  const today = getTodayKey();
+  const idx = s.log[today].indexOf(id);
+  if (idx === -1) {
+    s.log[today].push(id);
+    s.stats.totalCompletions = (s.stats.totalCompletions || 0) + 1;
+    showToast('✅ Habit logged! Keep it up 🌱');
+  } else {
+    s.log[today].splice(idx, 1);
+    s.stats.totalCompletions = Math.max(0, (s.stats.totalCompletions || 1) - 1);
+  }
+  const streak = calcCurrentStreak(s.log, s.habits);
+  s.stats.bestStreak = Math.max(s.stats.bestStreak || 0, streak);
+  saveState(s);
+  render();
+}
+
+function addHabit() {
+  const input = document.getElementById('new-habit-input');
+  const name = input.value.trim();
+  if (!name) return;
+  const s = getState();
+  const newId = Date.now();
+  s.habits.push({ id: newId, name, emoji: '🌿', impact: 'carbon' });
+  saveState(s);
+  input.value = '';
+  render();
+  showToast('🌿 New habit added!');
+}
+
+document.getElementById('new-habit-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') addHabit();
+});
+
+function calcHabitStreak(log, habitId) {
+  let streak = 0;
+  const today = new Date();
+  for (let i = 0; i < 365; i++) {
+    const d = new Date(today);
+    d.setDate(today.getDate() - i);
+    const key = d.toISOString().split('T')[0];
+    if ((log[key] || []).includes(habitId)) streak++;
+    else break;
+  }
+  return streak;
+}
+
+function calcCurrentStreak(log, habits) {
+  if (!habits.length) return 0;
+  let streak = 0;
+  const today = new Date();
+  for (let i = 0; i < 365; i++) {
+    const d = new Date(today);
+    d.setDate(today.getDate() - i);
+    const key = d.toISOString().split('T')[0];
+    const done = (log[key] || []).length;
+    if (done > 0) streak++;
+    else if (i > 0) break;
+  }
+  return streak;
+}
+
+// ── Reminder ──
+function openReminderModal() {
+  const s = getState();
+  document.getElementById('reminder-time').value = s.reminder.time || '08:00';
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+}
+
+function saveReminder() {
+  const time = document.getElementById('reminder-time').value;
+  const s = getState();
+  s.reminder = { on: true, time };
+  saveState(s);
+  closeModal();
+  render();
+  showToast(`🔔 Reminder set for ${time} daily!`);
+  scheduleNotification(time);
+}
+
+function scheduleNotification(time) {
+  if (!('Notification' in window)) return;
+  Notification.requestPermission().then(perm => {
+    if (perm === 'granted') {
+      const [h, m] = time.split(':').map(Number);
+      const now = new Date();
+      const next = new Date();
+      next.setHours(h, m, 0, 0);
+      if (next <= now) next.setDate(next.getDate() + 1);
+      const ms = next - now;
+      setTimeout(() => {
+        new Notification('🌿 EcoTrack Reminder', {
+          body: "Time to log your eco habits for today!",
+          icon: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌿</text></svg>"
+        });
+      }, ms);
+    }
+  });
+}
+
+// ── Toast ──
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ── Init ──
+render();
+</script>
+</body>
+</html>
